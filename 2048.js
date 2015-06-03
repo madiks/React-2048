@@ -3,16 +3,12 @@ function init(n){
   for (var i = 0; i < n; i++) {
     var tmp = [];
     for (var j = 0; j < n; j++) {
-      tmp.push(0);
+      tmp.push({v: 0, isNew: false, isMerged: false});
     }
     gameMap.push(tmp);
   }
   return gameMap;
 }
-
-var MapLen = 4;
-var MaxScore = 2048;
-var gameData = init(MapLen);
 
 function display(gameData){
   gameData.forEach(function(elem){
@@ -20,18 +16,18 @@ function display(gameData){
   });
 }
 
-//display(gameData);
-
 function checkGameStatusOrAddTile(gameData, MaxScore){
   var state;
   var pool = [];
   gameData.forEach(function(row, keyRow){
     row.forEach(function(elem, keyCol){
-      if(elem >= MaxScore){
+      if(elem.v >= MaxScore){
         state = true;
-      }else if (elem === 0){
+      }else if (elem.v === 0){
         pool.push({x: keyCol, y: keyRow});
       }
+      elem.isNew = false;
+      elem.isMerged = false;
     });
   });
   if(state === true){
@@ -44,78 +40,109 @@ function checkGameStatusOrAddTile(gameData, MaxScore){
   return pos;
 }
 
-function getRandomNum(){
-  var set = [2, 2, 2, 4];
+function getRandomTile(){
+  var set = [2, 2, 2, 2, 2, 4];
   var num = set[Math.floor(Math.random() * set.length)];
-  return num;
+  return {v: num, isNew: true, isMerged: false};
 }
 
-function fillTile(gameData, tile, num){
-  gameData[tile.x][tile.y] = num;
+function fillTile(gameData, pos, tile){
+  gameData[pos.x][pos.y] = tile;
   return gameData;
 }
 
 
-var tile = checkGameStatusOrAddTile(gameData, MaxScore);
-//console.log(tile);
-var num = getRandomNum();
-//console.log(num);
+function startGame(){
+  var score = 0;
+  var bestScore = 0;
+  var status = 'runing';
+  var MapLen = 4;
+  var MaxScore = 2048;
+  var gameData = init(MapLen);
+  for(i = 0; i < 2; i++){
+    var pos = checkGameStatusOrAddTile(gameData, MaxScore);
+    var tile = getRandomTile();
+    gameData = fillTile(gameData, pos, tile);
+  }
+  return {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore}, status: status};
+}
 
-gameData = fillTile(gameData, tile, num);
+function addNewTile(gd){
+  var pos = checkGameStatusOrAddTile(gd.gameData, 2048);
+  if(pos === true){
+    return true;
+  }
+  if(pos === false){
+    return false;
+  }
+  var tile = getRandomTile();
+  var gameData = fillTile(gd.gameData, pos, tile);
+  return {gameData: gameData, scoreBoard: gd.scoreBoard};
+}
 
-tile = checkGameStatusOrAddTile(gameData, MaxScore);
-//console.log(tile);
-num = getRandomNum();
-//console.log(num);
+// var tile = checkGameStatusOrAddTile(gameData, MaxScore);
+// //console.log(tile);
+// var num = getRandomTile();
+// //console.log(num);
 
-gameData = fillTile(gameData, tile, num);
-display(gameData);
+// gameData = fillTile(gameData, tile, num);
 
-function slideTo(direction, gameData){
-  switch(direction){
-    case 'top':
+// tile = checkGameStatusOrAddTile(gameData, MaxScore);
+// //console.log(tile);
+// num = getRandomTile();
+// //console.log(num);
+
+// gameData = fillTile(gameData, tile, num);
+// display(gameData);
+
+function slideTo(keyCode, gameData){
+  switch(keyCode){
+    case 38:
       var gd = slideToTop(gameData);
     break;
 
-    case 'bottom':
+    case 40:
       var gd = slideToBottom(gameData);
     break;
 
-    case 'left':
+    case 37:
       var gd = slideToLeft(gameData);
     break;
 
-    case 'right':
+    case 39:
       var gd = slideToRight(gameData);
     break;
   }
   return gd;
 }
 
-function slideToTop(gd){
-  var gd = MirrorV(gd);
-  gd = MirrorV(gd);
-  var MapLen = gd.length;
+function slideToTop(gameData){
+  var MapLen = gameData.gameData.length;
   for(var y = 1; y < MapLen; y++){
-    //console.log(gd[y]);
+    //console.log(gameData.gameData[y]);
     for (var x = 0; x < MapLen; x++) {
-      //console.log(gd[y][x]);
+      //console.log(gameData.gameData[y][x]);
       var tmpY = y;
       while(tmpY > 0){
-        if(gd[tmpY][x] !== 0){
-          if(gd[tmpY][x] === gd[tmpY-1][x]){
-            gd[tmpY-1][x] = 2 * gd[tmpY][x];
-            gd[tmpY][x] = 0;
-          }else if(gd[tmpY-1][x] === 0){
-            gd[tmpY-1][x] = gd[tmpY][x];
-            gd[tmpY][x] = 0;
+        if(gameData.gameData[tmpY][x].v !== 0){
+          if(gameData.gameData[tmpY][x].v === gameData.gameData[tmpY-1][x].v){
+            gameData.gameData[tmpY-1][x].v = 2 * gameData.gameData[tmpY][x].v;
+            gameData.gameData[tmpY-1][x].isMerged = true;
+            gameData.scoreBoard.score += 2 * gameData.gameData[tmpY][x].v;
+            if(gameData.scoreBoard.score > gameData.scoreBoard.bestScore){
+              gameData.scoreBoard.bestScore = gameData.scoreBoard.score;
+            }
+            gameData.gameData[tmpY][x] = {v: 0, isNew: false, isMerged: false};
+          }else if(gameData.gameData[tmpY-1][x].v === 0){
+            gameData.gameData[tmpY-1][x].v = gameData.gameData[tmpY][x].v;
+            gameData.gameData[tmpY][x] = {v: 0, isNew: false, isMerged: false};
           }
         }
         tmpY--;
       }
     };
   }
-  return gd;
+  return gameData;
 }
 
 function slideToBottom(gameData) {
@@ -140,58 +167,58 @@ function slideToRight(gameData){
 }
 
 function Right90(gameData){
-  var MapLen = gameData.length;
+  var MapLen = gameData.gameData.length;
   var gd = init(MapLen);
-  gameData.forEach(function(row, x){
+  gameData.gameData.forEach(function(row, x){
     row.forEach(function(elem, y){
       gd[y][MapLen-x-1] = elem;
     });
   })
-  return gd;
+  return {gameData: gd, scoreBoard: gameData.scoreBoard};
 }
 
 function Left90(gameData) {
-  var MapLen = gameData.length;
+  var MapLen = gameData.gameData.length;
   var gd = init(MapLen);
-  gameData.forEach(function(row, x){
+  gameData.gameData.forEach(function(row, x){
     row.forEach(function(elem, y){
       gd[MapLen-y-1][x] = elem;
     });
   })
-  return gd;
+  return {gameData: gd, scoreBoard: gameData.scoreBoard};
 }
 
 function MirrorV(gameData) {
-  var MapLen = gameData.length;
+  var MapLen = gameData.gameData.length;
   var gd = init(MapLen);
-  gameData.forEach(function(row, x){
+  gameData.gameData.forEach(function(row, x){
     row.forEach(function(elem, y){
       gd[MapLen-x-1][y] = elem;
     });
   })
-  return gd;
+  return {gameData: gd, scoreBoard: gameData.scoreBoard};
 }
 
-console.log('source:')
-display(gameData);
-var gd = slideTo('top', gameData);
-console.log('slideTo top');
-display(gd);
+// console.log('source:')
+// display(gameData);
+// var gd = slideTo('top', gameData);
+// console.log('slideTo top');
+// display(gd);
 
-console.log('source:')
-display(gameData);
-var gd = slideTo('bottom', gameData);
-console.log('slideTo bottom');
-display(gd);
+// console.log('source:')
+// display(gameData);
+// var gd = slideTo('bottom', gameData);
+// console.log('slideTo bottom');
+// display(gd);
 
-console.log('source:')
-display(gameData);
-var gd = slideTo('left', gameData);
-console.log('slideTo left');
-display(gd);
+// console.log('source:')
+// display(gameData);
+// var gd = slideTo('left', gameData);
+// console.log('slideTo left');
+// display(gd);
 
-console.log('source:')
-display(gameData);
-var gd = slideTo('right', gameData);
-console.log('slideTo right');
-display(gd);
+// console.log('source:')
+// display(gameData);
+// var gd = slideTo('right', gameData);
+// console.log('slideTo right');
+// display(gd);

@@ -64,10 +64,24 @@ var KeepPlaying_Btn = React.createClass({
 });
 
 var Game_Msg = React.createClass({
+  calGameStatus: function(){
+    var classArr = ["game-message"];
+    var msg = "";
+    if(this.props.status === 'lose'){
+      classArr.push("game-over");
+      msg = "You lose!";
+    }
+    if(this.props.status === 'win'){
+      classArr.push("game-won");
+      msg = "You Win!";
+    }
+    return {classStr: classArr.join(" "), msg: msg};
+  },
   render: function(){
+    var gameStatus = this.calGameStatus();
     return (
-      <div className="game-message">
-        <p></p>
+      <div className={gameStatus.classStr}>
+        <p>{gameStatus.msg}</p>
         <div className="lower">
           <KeepPlaying_Btn handleNewGame={this.props.handleNewGame} />
           <TryAgain_Btn handleNewGame={this.props.handleNewGame} />
@@ -135,7 +149,7 @@ var Tile = React.createClass({
 var Tile_Container = React.createClass({
   render: function(){
     var tiles = [];
-    this.props.gameData.forEach(function(row, keyRow){
+    this.props.tileSet.forEach(function(row, keyRow){
       row.forEach(function(elem, keyCol){
         if(elem.v > 0){
           tiles.push(<Tile tile={elem} keyCol={keyCol} keyRow={keyRow} />);
@@ -154,50 +168,25 @@ var Game_Container = React.createClass({
   render: function(){
     return (
       <div className="game-container">
-        <Game_Msg handleNewGame={this.props.handleNewGame} />
+        <Game_Msg handleNewGame={this.props.handleNewGame} status={this.props.gameData.status} />
         <Grid_Container />
-        <Tile_Container gameData={this.props.gameData} />
+        <Tile_Container tileSet={this.props.gameData.tileSet} />
       </div>
     );
   }
 });
 
-var gameData = [
-  [
-    {v: 0, isNew: false, isMerged: false},
-    {v: 2, isNew: true, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-  ],
-  [
-    {v: 0, isNew: false, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-    {v: 4, isNew: true, isMerged: false},
-  ],
-  [
-    {v: 0, isNew: false, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-    {v: 8, isNew: false, isMerged: true},
-    {v: 0, isNew: false, isMerged: false},
-  ],
-  [
-    {v: 0, isNew: false, isMerged: false},
-    {v: 16, isNew: false, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-    {v: 0, isNew: false, isMerged: false},
-  ]
-];
-
 var Game2048 = React.createClass({
   getInitialState: function(){
-    return {gameData: gameData, scoreBoard: {score: 100, bestScore: 2048}};
+    return {gameData: startGame()};
   },
   handleNewGame: function(){
-    console.log('start new game!')
+    this.setState({gameData: startGame()});
   },
   handleKeyPress: function(e){
     console.log(e.which);
+    var gd = slideTo(e.which, this.state.gameData);
+    this.setState({gameData: gd});
   },
   componentDidMount: function(){
     $(document).keydown(this.handleKeyPress);
@@ -205,7 +194,7 @@ var Game2048 = React.createClass({
   render: function(){
     return (
       <div id="game2048">
-        <Game_Heading scoreBoard={this.state.scoreBoard} />
+        <Game_Heading scoreBoard={this.state.gameData.scoreBoard} />
         <Game_Toolbar handleNewGame={this.handleNewGame} />
         <Game_Container gameData={this.state.gameData} handleNewGame={this.handleNewGame} />
       </div>
