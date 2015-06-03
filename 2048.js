@@ -22,7 +22,7 @@ function display(gameData){
 
 //display(gameData);
 
-function checkGameStatusOrAddTile(gameData, MapLen, MaxScore){
+function checkGameStatusOrAddTile(gameData, MaxScore){
   var state;
   var pool = [];
   gameData.forEach(function(row, keyRow){
@@ -56,14 +56,14 @@ function fillTile(gameData, tile, num){
 }
 
 
-var tile = checkGameStatusOrAddTile(gameData, MapLen, MaxScore);
+var tile = checkGameStatusOrAddTile(gameData, MaxScore);
 //console.log(tile);
 var num = getRandomNum();
 //console.log(num);
 
 gameData = fillTile(gameData, tile, num);
 
-tile = checkGameStatusOrAddTile(gameData, MapLen, MaxScore);
+tile = checkGameStatusOrAddTile(gameData, MaxScore);
 //console.log(tile);
 num = getRandomNum();
 //console.log(num);
@@ -93,8 +93,8 @@ function slideTo(direction, gameData){
 }
 
 function slideToTop(gd){
-  //var gd = MirrorV(gd);
-  //gd = MirrorV(gd);
+  var gd = MirrorV(gd);
+  gd = MirrorV(gd);
   var MapLen = gd.length;
   for(var y = 1; y < MapLen; y++){
     //console.log(gd[y]);
