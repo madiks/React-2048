@@ -2,6 +2,8 @@
 
 Write Game 2048 base on Facebook React.
 
+Play it online: [react 2048](http://react2048.sinaapp.com/)
+
 How to play:
 
     1.git clone it
