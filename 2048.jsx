@@ -149,7 +149,7 @@ var Tile = React.createClass({
 });
 
 var Tile_Container = React.createClass({
-  tilesByDirection: function(){
+  render: function(){
     var tiles = [];
     this.props.tileSet.forEach(function(row, keyRow){
       row.forEach(function(elem, keyCol){
@@ -159,12 +159,9 @@ var Tile_Container = React.createClass({
         }
       }.bind(this));
     }.bind(this));
-    return tiles;
-  },
-  render: function(){
     return (
       <div className="tile-container">
-        {this.tilesByDirection()}
+        {tiles}
       </div>
     );
   }
@@ -176,7 +173,7 @@ var Game_Container = React.createClass({
       <div className="game-container">
         <Game_Msg handleNewGame={this.props.handleNewGame} status={this.props.gameData.status} />
         <Grid_Container />
-        <Tile_Container tileSet={this.props.gameData.tileSet} slideDirection={this.props.gameData.slideDirection} />
+        <Tile_Container tileSet={this.props.gameData.tileSet} />
       </div>
     );
   }

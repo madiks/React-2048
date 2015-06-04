@@ -66,7 +66,7 @@ function startGame(){
   var MapLen = 4;
   var MaxScore = 2048;
   var gameData = init(MapLen);
-  var gd = {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore}, status: status, slideDirection: 'none'};
+  var gd = {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore}, status: status};
   for(i = 0; i < 2; i++){
     gd = addNewTile(gd, MaxScore);
   }
@@ -84,25 +84,21 @@ function slideTo(keyCode, gd){
     case 38:
       gd = clearTileSetStatus(gd);
       gd = slideToTop(gd);
-      gd.slideDirection = 'top';
     break;
 
     case 40:
       gd = clearTileSetStatus(gd);
       gd = slideToBottom(gd);
-      gd.slideDirection = 'bottom';
     break;
 
     case 37:
       gd = clearTileSetStatus(gd);
       gd = slideToLeft(gd);
-      gd.slideDirection = 'left';
     break;
 
     case 39:
       gd = clearTileSetStatus(gd);
       gd = slideToRight(gd);
-      gd.slideDirection = 'right';
     break;
   }
   gd = addNewTile(gd, 2048);
