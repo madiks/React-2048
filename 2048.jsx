@@ -209,19 +209,34 @@ var Game2048 = React.createClass({
     }
     e.preventDefault();
   },
-  handleSwipe: function(e, direction){
-    if(this.state.gameData.status === 'runing'){
+  handleSwipe: function(e){
+    var direction = false;
+    switch(e.type){
+      case 'swipeleft':
+        direction = 'left';
+      break;
+      case 'swipeup':
+        direction = 'up';
+      break;
+      case 'swiperight':
+        direction = 'right';
+      break;
+      case 'swipedown':
+        direction = 'down';
+      break;
+    }
+    if(direction && this.state.gameData.status === 'runing'){
       var gd = slideTo(direction, this.state.gameData);
+      //console.log(gd);
       this.setState({gameData: gd});
     }
     e.preventDefault();
   },
   componentDidMount: function(){
     $(document).keydown(this.handleKeyPress);
-    $(document).swipe( {
-      //Generic swipe handler for all directions
-      swipe:this.handleSwipe
-    });
+    var mc = new Hammer(document.body);
+    mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL , threshold: 0, velocity: 0.3 });
+    mc.on("swipeleft swiperight swipeup swipedown", this.handleSwipe);
   },
   render: function(){
     return (
