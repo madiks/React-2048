@@ -79,24 +79,24 @@ function addNewTile(gd, MaxScore){
 }
 
 
-function slideTo(keyCode, gd){
-  switch(keyCode){
-    case 38:
+function slideTo(direction, gd){
+  switch(direction){
+    case 'up':
       gd = clearTileSetStatus(gd);
       gd = slideToTop(gd);
     break;
 
-    case 40:
+    case 'down':
       gd = clearTileSetStatus(gd);
       gd = slideToBottom(gd);
     break;
 
-    case 37:
+    case 'left':
       gd = clearTileSetStatus(gd);
       gd = slideToLeft(gd);
     break;
 
-    case 39:
+    case 'right':
       gd = clearTileSetStatus(gd);
       gd = slideToRight(gd);
     break;

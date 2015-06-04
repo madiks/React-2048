@@ -187,13 +187,39 @@ var Game2048 = React.createClass({
     this.setState({gameData: startGame()});
   },
   handleKeyPress: function(e){
-    var gd = slideTo(e.which, this.state.gameData);
-    //console.log(gd);
+    var direction = false;
+    switch(e.which){
+      case 37:
+        direction = 'left';
+      break;
+      case 38:
+        direction = 'up';
+      break;
+      case 39:
+        direction = 'right';
+      break;
+      case 40:
+        direction = 'down';
+      break;
+    }
+    if(direction){
+      var gd = slideTo(direction, this.state.gameData);
+      //console.log(gd);
+      this.setState({gameData: gd});
+      e.preventDefault();
+    }
+  },
+  handleSwipe: function(e, direction){
+    var gd = slideTo(direction, this.state.gameData);
     this.setState({gameData: gd});
     e.preventDefault();
   },
   componentDidMount: function(){
     $(document).keydown(this.handleKeyPress);
+    $(document).swipe( {
+      //Generic swipe handler for all directions
+      swipe:this.handleSwipe
+    });
   },
   render: function(){
     return (
