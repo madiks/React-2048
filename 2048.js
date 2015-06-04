@@ -60,7 +60,8 @@ function fillTile(gd, pos, tile){
 
 function startGame(){
   var score = 0;
-  var bestScore = 0;
+  var bestScore = window.localStorage.getItem('bestScore');
+  bestScore = bestScore ? bestScore : 0;
   var status = 'runing';
   var MapLen = 4;
   var MaxScore = 2048;
@@ -140,6 +141,7 @@ function slideToTop(gd){
         gd.scoreBoard.score += gd.tileSet[u][i].v * 2; // 计算游戏分数
         if(gd.scoreBoard.score > gd.scoreBoard.bestScore){
           gd.scoreBoard.bestScore = gd.scoreBoard.score;
+          window.localStorage.setItem('bestScore', gd.scoreBoard.bestScore);
         }
         u++;
         changed = true;
