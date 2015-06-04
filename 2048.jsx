@@ -202,16 +202,18 @@ var Game2048 = React.createClass({
         direction = 'down';
       break;
     }
-    if(direction){
+    if(direction && this.state.gameData.status === 'runing'){
       var gd = slideTo(direction, this.state.gameData);
       //console.log(gd);
       this.setState({gameData: gd});
-      e.preventDefault();
     }
+    e.preventDefault();
   },
   handleSwipe: function(e, direction){
-    var gd = slideTo(direction, this.state.gameData);
-    this.setState({gameData: gd});
+    if(this.state.gameData.status === 'runing'){
+      var gd = slideTo(direction, this.state.gameData);
+      this.setState({gameData: gd});
+    }
     e.preventDefault();
   },
   componentDidMount: function(){
