@@ -10,34 +10,40 @@ function init(n){
   return gameMap;
 }
 
-function display(gameData){
-  gameData.forEach(function(elem){
-    console.log(elem);
-  });
-}
-
-function checkGameStatusOrAddTile(gameData, MaxScore){
+function checkGameStatusAndAddTile(gd, MaxScore){
   var state;
   var pool = [];
-  gameData.forEach(function(row, keyRow){
+  gd.tileSet.forEach(function(row, keyRow){
     row.forEach(function(elem, keyCol){
       if(elem.v >= MaxScore){
         state = true;
       }else if (elem.v === 0){
-        pool.push({x: keyCol, y: keyRow});
+        pool.push({x: keyRow, y: keyCol});
       }
-      elem.isNew = false;
-      elem.isMerged = false;
     });
   });
+  //console.log(gd.tileSet);
   if(state === true){
-    return true;
+    gd.status = 'win';
+    return gd;
   }
   if(pool.length === 0){
-    return false;
+    gd.status = 'lose';
+    return gd;
   }
   var pos = pool[Math.floor(Math.random() * pool.length)];
-  return pos;
+  var tile = getRandomTile();
+  return fillTile(gd, pos, tile);
+}
+
+function clearTileSetStatus(gd){
+  gd.tileSet.forEach(function(row, keyRow){
+    row.forEach(function(elem, keyCol){
+      gd.tileSet[keyRow][keyCol].isNew = false;
+      gd.tileSet[keyRow][keyCol].isMerged = false;
+    });
+  });
+  return gd;
 }
 
 function getRandomTile(){
@@ -46,9 +52,9 @@ function getRandomTile(){
   return {v: num, isNew: true, isMerged: false};
 }
 
-function fillTile(gameData, pos, tile){
-  gameData[pos.x][pos.y] = tile;
-  return gameData;
+function fillTile(gd, pos, tile){
+  gd.tileSet[pos.x][pos.y] = tile;
+  return gd;
 }
 
 
@@ -59,166 +65,155 @@ function startGame(){
   var MapLen = 4;
   var MaxScore = 2048;
   var gameData = init(MapLen);
+  var gd = {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore}, status: status, slideDirection: 'none'};
   for(i = 0; i < 2; i++){
-    var pos = checkGameStatusOrAddTile(gameData, MaxScore);
-    var tile = getRandomTile();
-    gameData = fillTile(gameData, pos, tile);
-  }
-  return {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore}, status: status};
-}
-
-function addNewTile(gd){
-  var pos = checkGameStatusOrAddTile(gd.gameData, 2048);
-  if(pos === true){
-    return true;
-  }
-  if(pos === false){
-    return false;
-  }
-  var tile = getRandomTile();
-  var gameData = fillTile(gd.gameData, pos, tile);
-  return {gameData: gameData, scoreBoard: gd.scoreBoard};
-}
-
-// var tile = checkGameStatusOrAddTile(gameData, MaxScore);
-// //console.log(tile);
-// var num = getRandomTile();
-// //console.log(num);
-
-// gameData = fillTile(gameData, tile, num);
-
-// tile = checkGameStatusOrAddTile(gameData, MaxScore);
-// //console.log(tile);
-// num = getRandomTile();
-// //console.log(num);
-
-// gameData = fillTile(gameData, tile, num);
-// display(gameData);
-
-function slideTo(keyCode, gameData){
-  switch(keyCode){
-    case 38:
-      var gd = slideToTop(gameData);
-    break;
-
-    case 40:
-      var gd = slideToBottom(gameData);
-    break;
-
-    case 37:
-      var gd = slideToLeft(gameData);
-    break;
-
-    case 39:
-      var gd = slideToRight(gameData);
-    break;
+    gd = addNewTile(gd, MaxScore);
   }
   return gd;
 }
 
-function slideToTop(gameData){
-  var MapLen = gameData.gameData.length;
-  for(var y = 1; y < MapLen; y++){
-    //console.log(gameData.gameData[y]);
-    for (var x = 0; x < MapLen; x++) {
-      //console.log(gameData.gameData[y][x]);
-      var tmpY = y;
-      while(tmpY > 0){
-        if(gameData.gameData[tmpY][x].v !== 0){
-          if(gameData.gameData[tmpY][x].v === gameData.gameData[tmpY-1][x].v){
-            gameData.gameData[tmpY-1][x].v = 2 * gameData.gameData[tmpY][x].v;
-            gameData.gameData[tmpY-1][x].isMerged = true;
-            gameData.scoreBoard.score += 2 * gameData.gameData[tmpY][x].v;
-            if(gameData.scoreBoard.score > gameData.scoreBoard.bestScore){
-              gameData.scoreBoard.bestScore = gameData.scoreBoard.score;
-            }
-            gameData.gameData[tmpY][x] = {v: 0, isNew: false, isMerged: false};
-          }else if(gameData.gameData[tmpY-1][x].v === 0){
-            gameData.gameData[tmpY-1][x].v = gameData.gameData[tmpY][x].v;
-            gameData.gameData[tmpY][x] = {v: 0, isNew: false, isMerged: false};
-          }
-        }
-        tmpY--;
-      }
-    };
-  }
-  return gameData;
+function addNewTile(gd, MaxScore){
+  var gd = checkGameStatusAndAddTile(gd, MaxScore);
+  return gd;
 }
 
-function slideToBottom(gameData) {
-  var gd = MirrorV(gameData);
+
+function slideTo(keyCode, gd){
+  switch(keyCode){
+    case 38:
+      gd = clearTileSetStatus(gd);
+      gd = slideToTop(gd);
+      gd.slideDirection = 'top';
+    break;
+
+    case 40:
+      gd = clearTileSetStatus(gd);
+      gd = slideToBottom(gd);
+      gd.slideDirection = 'bottom';
+    break;
+
+    case 37:
+      gd = clearTileSetStatus(gd);
+      gd = slideToLeft(gd);
+      gd.slideDirection = 'left';
+    break;
+
+    case 39:
+      gd = clearTileSetStatus(gd);
+      gd = slideToRight(gd);
+      gd.slideDirection = 'right';
+    break;
+  }
+  gd = addNewTile(gd, 2048);
+  return gd;
+}
+
+function slideToTop(gd){
+  var tl = gd.tileSet.length;
+  var changed = false;
+  var notfull = false;
+  for (var i = 0; i < tl; i++ ){
+
+    var np = tl;
+    var n = 0; // 统计每一列中非零值的个数
+
+    // 向上移动非零值，如果有零值元素，则用非零元素进行覆盖
+    for(var x = 0; x < np; x++) {
+      if (gd.tileSet[x][i].v != 0) {
+        gd.tileSet[n][i].v = gd.tileSet[x][i].v;
+        if (n != x) {
+          changed = true; // 标示数组的元素是否有变化
+        }
+        n++;
+      }
+    }
+    if (n < tl) {
+      notfull = true;
+    }
+    np = n;
+    // 向上合并所有相同的元素
+    for( var u = 0; u < np-1; u++) {
+      if (gd.tileSet[u][i].v == gd.tileSet[u+1][i].v) {
+        gd.tileSet[u][i].v *= 2;
+        gd.tileSet[u][i].isMerged = true;
+        gd.tileSet[u+1][i] = {v: 0, isNew: false, isMerged: false};
+        gd.scoreBoard.score += gd.tileSet[u][i].v * 2; // 计算游戏分数
+        if(gd.scoreBoard.score > gd.scoreBoard.bestScore){
+          gd.scoreBoard.bestScore = gd.scoreBoard.score;
+        }
+        u++;
+        changed = true;
+      }
+    }
+    // 合并完相同元素以后，再次向上移动非零元素
+    n = 0;
+    for (var t = 0; t < np; t++) {
+      if (gd.tileSet[t][i].v != 0 ){
+        gd.tileSet[n][i] = gd.tileSet[t][i]
+        n++
+      }
+    }
+    // 对于没有检查的元素
+    for (var o = n; o < tl; o++) {
+      gd.tileSet[o][i] = {v: 0, isNew: false, isMerged: false};
+    }
+  }
+  return gd;
+}
+
+function slideToBottom(gd) {
+  gd = MirrorV(gd);
   gd = slideToTop(gd);
   gd = MirrorV(gd);
   return gd;
 }
 
-function slideToLeft(gameData){
-  var gd = Right90(gameData);
+function slideToLeft(gd){
+  gd = Right90(gd);
   gd = slideToTop(gd);
   gd = Left90(gd);
   return gd;
 }
 
-function slideToRight(gameData){
-  var gd = Left90(gameData);
+function slideToRight(gd){
+  gd = Left90(gd);
   gd = slideToTop(gd);
   gd = Right90(gd);
   return gd;
 }
 
-function Right90(gameData){
-  var MapLen = gameData.gameData.length;
-  var gd = init(MapLen);
-  gameData.gameData.forEach(function(row, x){
+function Right90(gd){
+  var MapLen = gd.tileSet.length;
+  var newGd = init(MapLen);
+  gd.tileSet.forEach(function(row, x){
     row.forEach(function(elem, y){
-      gd[y][MapLen-x-1] = elem;
+      newGd[y][MapLen-x-1] = elem;
     });
   })
-  return {gameData: gd, scoreBoard: gameData.scoreBoard};
+  gd.tileSet = newGd;
+  return gd;
 }
 
-function Left90(gameData) {
-  var MapLen = gameData.gameData.length;
-  var gd = init(MapLen);
-  gameData.gameData.forEach(function(row, x){
+function Left90(gd) {
+  var MapLen = gd.tileSet.length;
+  var newGd = init(MapLen);
+  gd.tileSet.forEach(function(row, x){
     row.forEach(function(elem, y){
-      gd[MapLen-y-1][x] = elem;
+      newGd[MapLen-y-1][x] = elem;
     });
   })
-  return {gameData: gd, scoreBoard: gameData.scoreBoard};
+  gd.tileSet = newGd;
+  return gd;
 }
 
-function MirrorV(gameData) {
-  var MapLen = gameData.gameData.length;
-  var gd = init(MapLen);
-  gameData.gameData.forEach(function(row, x){
+function MirrorV(gd) {
+  var MapLen = gd.tileSet.length;
+  var newGd = init(MapLen);
+  gd.tileSet.forEach(function(row, x){
     row.forEach(function(elem, y){
-      gd[MapLen-x-1][y] = elem;
+      newGd[MapLen-x-1][y] = elem;
     });
   })
-  return {gameData: gd, scoreBoard: gameData.scoreBoard};
+  gd.tileSet = newGd;
+  return gd;
 }
-
-// console.log('source:')
-// display(gameData);
-// var gd = slideTo('top', gameData);
-// console.log('slideTo top');
-// display(gd);
-
-// console.log('source:')
-// display(gameData);
-// var gd = slideTo('bottom', gameData);
-// console.log('slideTo bottom');
-// display(gd);
-
-// console.log('source:')
-// display(gameData);
-// var gd = slideTo('left', gameData);
-// console.log('slideTo left');
-// display(gd);
-
-// console.log('source:')
-// display(gameData);
-// var gd = slideTo('right', gameData);
-// console.log('slideTo right');
-// display(gd);

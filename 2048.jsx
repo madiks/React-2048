@@ -127,7 +127,9 @@ var Grid_Container = React.createClass({
 var Tile = React.createClass({
   calTileClass: function(){
     var classArr = ["tile"];
-    classArr.push("tile-"+this.props.tile.v);
+    if(this.props.tile.v > 0){
+      classArr.push("tile-"+this.props.tile.v);
+    }
     classArr.push("tile-position-"+(this.props.keyCol+1)+"-"+(this.props.keyRow+1));
     if(this.props.tile.isNew){
       classArr.push("tile-new");
@@ -147,18 +149,22 @@ var Tile = React.createClass({
 });
 
 var Tile_Container = React.createClass({
-  render: function(){
+  tilesByDirection: function(){
     var tiles = [];
     this.props.tileSet.forEach(function(row, keyRow){
       row.forEach(function(elem, keyCol){
+        var keymark = keyCol+'-'+keyRow+'-'+elem.v;
         if(elem.v > 0){
-          tiles.push(<Tile tile={elem} keyCol={keyCol} keyRow={keyRow} />);
+          tiles.push(<Tile tile={elem} key={keymark} keyCol={keyCol} keyRow={keyRow} />);
         }
       }.bind(this));
     }.bind(this));
+    return tiles;
+  },
+  render: function(){
     return (
       <div className="tile-container">
-        {tiles}
+        {this.tilesByDirection()}
       </div>
     );
   }
@@ -170,7 +176,7 @@ var Game_Container = React.createClass({
       <div className="game-container">
         <Game_Msg handleNewGame={this.props.handleNewGame} status={this.props.gameData.status} />
         <Grid_Container />
-        <Tile_Container tileSet={this.props.gameData.tileSet} />
+        <Tile_Container tileSet={this.props.gameData.tileSet} slideDirection={this.props.gameData.slideDirection} />
       </div>
     );
   }
@@ -184,9 +190,10 @@ var Game2048 = React.createClass({
     this.setState({gameData: startGame()});
   },
   handleKeyPress: function(e){
-    console.log(e.which);
     var gd = slideTo(e.which, this.state.gameData);
+    //console.log(gd);
     this.setState({gameData: gd});
+    e.preventDefault();
   },
   componentDidMount: function(){
     $(document).keydown(this.handleKeyPress);
