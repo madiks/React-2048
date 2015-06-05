@@ -66,7 +66,7 @@ function startGame(){
   var MapLen = 4;
   var MaxScore = 2048;
   var gameData = init(MapLen);
-  var gd = {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore}, status: status};
+  var gd = {tileSet: gameData, scoreBoard: {score: score, bestScore: bestScore, scoreAddition: 0}, status: status};
   for(i = 0; i < 2; i++){
     gd = addNewTile(gd, MaxScore);
   }
@@ -106,6 +106,7 @@ function slideTo(direction, gd){
 }
 
 function slideToTop(gd){
+  gd.scoreBoard.scoreAddition = 0;
   var tl = gd.tileSet.length;
   var changed = false;
   var notfull = false;
@@ -134,7 +135,8 @@ function slideToTop(gd){
         gd.tileSet[u][i].v *= 2;
         gd.tileSet[u][i].isMerged = true;
         gd.tileSet[u+1][i] = {v: 0, isNew: false, isMerged: false};
-        gd.scoreBoard.score += gd.tileSet[u][i].v * 2; // 计算游戏分数
+        gd.scoreBoard.scoreAddition += gd.tileSet[u][i].v;
+        gd.scoreBoard.score += gd.scoreBoard.scoreAddition; // 计算游戏分数
         if(gd.scoreBoard.score > gd.scoreBoard.bestScore){
           gd.scoreBoard.bestScore = gd.scoreBoard.score;
           window.localStorage.setItem('bestScore', gd.scoreBoard.bestScore);

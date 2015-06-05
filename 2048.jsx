@@ -1,7 +1,14 @@
 var Heading_Socre_Board = React.createClass({
+  showScoreAddition: function(){
+    if(this.props.scoreAddition > 0){
+      return (
+        <div key={new Date().getTime()} className="score-addition">+{this.props.scoreAddition}</div>
+      );
+    }
+  },
   render: function(){
     return (
-      <div className="score-container">{this.props.score}</div>
+      <div className="score-container">{this.props.score}{this.showScoreAddition()}</div>
     );
   }
 });
@@ -20,7 +27,7 @@ var Game_Heading = React.createClass({
       <div className="heading">
         <h1 className="title">2048</h1>
         <div className="scores-container">
-          <Heading_Socre_Board score={this.props.scoreBoard.score} />
+          <Heading_Socre_Board score={this.props.scoreBoard.score} scoreAddition={this.props.scoreBoard.scoreAddition} />
           <Heading_Bestsocre_Board bestScore={this.props.scoreBoard.bestScore} />
         </div>
       </div>
@@ -130,7 +137,7 @@ var Tile = React.createClass({
     if(this.props.tile.v > 0){
       classArr.push("tile-"+this.props.tile.v);
     }
-    classArr.push("tile-position-"+(this.props.keyCol+1)+"-"+(this.props.keyRow+1));
+    classArr.push("tile-position-"+(this.props.keyRow+1)+"-"+(this.props.keyCol+1));
     if(this.props.tile.isNew){
       classArr.push("tile-new");
     }
@@ -153,9 +160,9 @@ var Tile_Container = React.createClass({
     var tiles = [];
     this.props.tileSet.forEach(function(row, keyRow){
       row.forEach(function(elem, keyCol){
-        var keymark = keyCol+'-'+keyRow+'-'+elem.v;
-        if(elem.v > 0){
-          tiles.push(<Tile tile={elem} key={keymark} keyCol={keyCol} keyRow={keyRow} />);
+        var keymark = keyCol+'-'+keyRow+'-'+this.props.tileSet[keyCol][keyRow].v;
+        if(this.props.tileSet[keyCol][keyRow].v > 0){
+          tiles.push(<Tile tile={this.props.tileSet[keyCol][keyRow]} key={keymark} keyCol={keyCol} keyRow={keyRow} />);
         }
       }.bind(this));
     }.bind(this));
