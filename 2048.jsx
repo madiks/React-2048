@@ -242,7 +242,7 @@ var Game2048 = React.createClass({
   componentDidMount: function(){
     $(document).keydown(this.handleKeyPress);
     var mc = new Hammer(document.body);
-    mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL , threshold: 0, velocity: 0.3 });
+    mc.get('swipe').set({ direction: Hammer.DIRECTION_ALL , threshold: 0, velocity: 0.2 });
     mc.on("swipeleft swiperight swipeup swipedown", this.handleSwipe);
   },
   render: function(){
